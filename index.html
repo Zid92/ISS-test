@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>ISS test</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="css/mdb.min.css" rel="stylesheet">
+    <!-- Your custom styles (optional) -->
+    <link href="css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+</head>
+
+<body>
+
+    <!-- Start your project here-->
+    <div class="container">
+        <div class="row LocAndTime">
+            <div class="col-lg-8 Loc text-left">
+                <h3>
+                    ISS is now at:
+                </h3>
+                <p>
+                    Latitudde: <span id="isslat"></span>° N, Longitude: <span id="isslon"></span>° E
+                </p>
+            </div>
+            <div class="col-lg-4 Time text-left">
+                <h4>
+                    Current UTC time: <br> <span id="isspass"></span>
+                </h4>
+            </div>
+        </div>
+        <div class="row Map-Ppl-Col">
+            <div class="col-lg-8 Map">
+                <div id="map"></div>
+            </div>
+            <div class="col-lg-4 Ppl-Col">
+                <div class="ppl">
+                    <ul id="astronames"></ul>
+                </div>
+                <div class="ColOfPpl">
+                    There are currently <span id="spacepeeps" style="font-weight:bold;"></span> humans on ISS.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Start your project here-->
+
+    <!-- SCRIPTS -->
+    <!-- JQuery -->
+    <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="js/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="js/mdb.min.js"></script>
+
+    <script>
+        var map = L.map('map').setView([0,0], 2);
+
+        function moveISS () {
+            $.getJSON('http://api.open-notify.org/iss-now.json?callback=?', function(data) {
+                var lat = data['iss_position']['latitude'];
+                var lon = data['iss_position']['longitude'];
+
+                iss.setLatLng([lat, lon]);
+                isscirc.setLatLng([lat, lon]);
+                map.panTo([lat, lon], animate=true);
+            });
+            setTimeout(moveISS, 5000);
+        }
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 4,
+        }).addTo(map);
+
+        var ISSIcon = L.icon({
+            iconUrl: './img/ISSIcon.png',
+            iconSize: [60, 40],
+            iconAnchor: [25, 15],
+            popupAnchor: [50, 25],
+        });
+
+
+        var iss = L.marker([0, 0], {icon: ISSIcon}).addTo(map);
+        var isscirc = L.circle([0,0], 2200e3, {color: "#c22", opacity: 0.3, weight:1, fillColor: "#c22", fillOpacity: 0.1}).addTo(map);
+
+        moveISS();
+
+
+/*location*/
+
+
+
+    function getISS () {
+        $.getJSON('http://api.open-notify.org/iss-now.json?callback=?', function(data) {
+            var lat = data['iss_position']['latitude'];
+            var lon = data['iss_position']['longitude'];
+            $('#isslat').html(Math.round(lat*1000)/1000.0);
+            $('#isslon').html(Math.round(lon*1000)/1000.0);
+        });
+        setTimeout(getISS, 5000);
+    }
+
+    getISS();
+
+
+/*TIME*/
+function time () {
+    var date = new Date(Date.now());
+    $('#isspass').html(  date.toString() );
+        setTimeout(time, 5000);
+    }
+      time();
+
+/*PPL     ------- Comments for the purity of the expected result, line:124,134-138 -------- */
+ /*       function ppl() {*/
+        $.getJSON('http://api.open-notify.org/astros.json?callback=?', function(data) {
+
+            data['people'].forEach(function (d) {
+                if (d['craft'] = 'ISS') {
+                    $('#astronames').append('<li class="btn btn-primary">' + '<span class="oi oi-person"></span>&nbsp;&nbsp;&nbsp;&nbsp;' + d['name'] + '</li>');
+                }
+            });
+
+        });
+/*
+                setTimeout(ppl, 5000);
+    }
+
+    ppl();*/
+
+/*number*/
+
+    function number() {
+        $.getJSON('http://api.open-notify.org/astros.json?callback=?', function(data) {
+
+            data['people'].forEach(function (d) {
+                if (d['craft'] = 'ISS') {
+                    $('#spacepeeps').html(data['number']);
+                }
+            });
+        });
+
+        setTimeout(number, 5000);
+    }
+
+    number();
+    </script>
+</body>
+
+</html>
